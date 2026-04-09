@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Everyone Matters 🌱</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #87CEEB 0%, #b8e4f9 40%, #d4edda 70%, #6db36d 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      position: relative;
+    }
+
+    /* ── Sky & Sun ── */
+    #sky {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 55%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .sun {
+      position: absolute;
+      top: 30px; right: 80px;
+      width: 70px; height: 70px;
+      background: radial-gradient(circle, #ffe066 60%, #ffb300 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 40px 15px #ffe06688;
+      animation: sunPulse 4s ease-in-out infinite;
+    }
+    @keyframes sunPulse {
+      0%,100% { box-shadow: 0 0 40px 15px #ffe06688; }
+      50%      { box-shadow: 0 0 60px 25px #ffe066aa; }
+    }
+
+    /* ── Clouds ── */
+    .cloud {
+      position: absolute;
+      background: white;
+      border-radius: 50px;
+      opacity: 0.85;
+      animation: drift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+    .cloud::before { width: 60%; height: 150%; top: -50%; left: 15%; }
+    .cloud::after  { width: 40%; height: 120%; top: -40%; right: 15%; }
+    @keyframes drift {
+      from { transform: translateX(-200px); }
+      to   { transform: translateX(calc(100vw + 200px)); }
+    }
+
+    /* ── Ground ── */
+    #ground {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 160px;
+      background: linear-gradient(180deg, #6db36d 0%, #4a8c4a 30%, #3a6b3a 100%);
+      z-index: 1;
+      border-radius: 60% 60% 0 0 / 30px 30px 0 0;
+    }
+    #soil {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(180deg, #8B5E3C 0%, #6B4226 100%);
+      border-radius: 40% 40% 0 0 / 20px 20px 0 0;
+    }
+
+    /* ── Forest Container ── */
+    #forest {
+      position: fixed;
+      bottom: 80px;
+      left: 0; right: 0;
+      height: 420px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── Tree Slot ── */
+    .tree-slot {
+      position: relative;
+      width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* ── Tree SVG wrapper ── */
+    .tree-wrap {
+      position: relative;
+      width: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: visible;
+    }
+
+    /* ── Seed (underground dot) ── */
+    .seed {
+      width: 14px; height: 14px;
+      background: radial-gradient(circle, #c8a86b, #8B5E3C);
+      border-radius: 50%;
+      position: absolute;
+      bottom: -30px;
+      opacity: 0.7;
+      transition: opacity 0.5s;
+    }
+
+    /* ── Sprout ── */
+    .sprout {
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: bottom center;
+      transform: scaleY(0);
+      opacity: 0;
+      transition: none;
+    }
+    .sprout.grow {
+      animation: sproutUp 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes sproutUp {
+      0%   { transform: scaleY(0); opacity: 0; }
+      60%  { transform: scaleY(1.1); opacity: 1; }
+      80%  { transform: scaleY(0.95); }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .stem {
+      width: 6px;
+      background: linear-gradient(180deg, #5a9e3a, #3a6b1a);
+      border-radius: 3px;
+      transform-origin: bottom;
+    }
+    .leaf-pair {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      margin-bottom: -4px;
+    }
+    .leaf {
+      position: absolute;
+      width: 22px; height: 14px;
+      background: radial-gradient(ellipse at 30% 50%, #7ec850, #4a9a20);
+      border-radius: 50% 50% 50% 0;
+      top: 0;
+    }
+    .leaf.left  { left: 0;  transform: rotate(-30deg); }
+    .leaf.right { right: 0; transform: rotate(30deg) scaleX(-1); }
+
+    /* ── Sapling (medium tree) ── */
+    .sapling {
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: bottom center;
+      transform: scaleY(0);
+      opacity: 0;
+      transition: none;
+    }
+    .sapling.grow {
+      animation: saplingUp 1.5s cubic-bezier(0.34,1.4,0.64,1) forwards;
+    }
+    @keyframes saplingUp {
+      0%   { transform: scaleY(0); opacity: 0; }
+      70%  { transform: scaleY(1.05); opacity: 1; }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* ── Big Tree (SVG) ── */
+    .big-tree {
+      position: absolute;
+      bottom: 0;
+      transform-origin: bottom center;
+      transform: scaleY(0) scaleX(0);
+      opacity: 0;
+      transition: none;
+    }
+    .big-tree.grow {
+      animation: bigTreeUp 2s cubic-bezier(0.34,1.3,0.64,1) forwards;
+    }
+    @keyframes bigTreeUp {
+      0%   { transform: scale(0); opacity: 0; }
+      60%  { transform: scale(1.08); opacity: 1; }
+      80%  { transform: scale(0.97); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Speech Bubble on tree ── */
+    .tree-bubble {
+      position: absolute;
+      bottom: 105%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #4a9a20;
+      border-radius: 12px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: #2d6a10;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 2px 8px #0002;
+    }
+    .tree-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #4a9a20;
+    }
+    .tree-bubble.show {
+      animation: bubblePop 3.5s ease forwards;
+    }
+    @keyframes bubblePop {
+      0%   { opacity: 0; transform: translateX(-50%) scale(0.7); }
+      15%  { opacity: 1; transform: translateX(-50%) scale(1.05); }
+      25%  { transform: translateX(-50%) scale(1); }
+      75%  { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+    }
+
+    /* ── UI Panel ── */
+    #ui-panel {
+      position: fixed;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #title {
+      font-size: 28px;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 2px 8px #0005, 0 0 20px #4a9a2066;
+      letter-spacing: 1px;
+    }
+
+    #stage-label {
+      font-size: 14px;
+      color: #ffffffcc;
+      background: #0003;
+      padding: 4px 14px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    #counter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffffcc;
+      border-radius: 30px;
+      padding: 8px 20px;
+      box-shadow: 0 4px 16px #0002;
+    }
+    #counter-text {
+      font-size: 15px;
+      color: #2d6a10;
+      font-weight: 600;
+    }
+    #progress-track {
+      width: 160px; height: 10px;
+      background: #d4edda;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5a9e3a, #7ec850);
+      border-radius: 5px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Mic Button ── */
+    #mic-btn {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #5a9e3a, #3a7a1a);
+      color: white;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px #5a9e3a88;
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    #mic-btn:hover { transform: scale(1.08); }
+    #mic-btn.listening {
+      background: linear-gradient(135deg, #e05555, #b02020);
+      box-shadow: 0 4px 20px #e0555588;
+      animation: micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse {
+      0%,100% { box-shadow: 0 4px 20px #e0555588; }
+      50%      { box-shadow: 0 4px 40px #e05555cc; }
+    }
+    #mic-label {
+      font-size: 12px;
+      color: #ffffffcc;
+      text-align: center;
+    }
+
+    /* ── Transcript ── */
+    #transcript-box {
+      background: #ffffffdd;
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #444;
+      min-width: 260px;
+      text-align: center;
+      box-shadow: 0 2px 10px #0002;
+      min-height: 36px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Big Message Banner ── */
+    #big-message {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(135deg, #fff9e6, #fffde0);
+      border: 3px solid #f0c040;
+      border-radius: 20px;
+      padding: 24px 40px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #5a3e00;
+      text-align: center;
+      z-index: 200;
+      box-shadow: 0 8px 40px #0004;
+      max-width: 80vw;
+      pointer-events: none;
+    }
+    #big-message.show {
+      animation: bannerIn 4s ease forwards;
+    }
+    @keyframes bannerIn {
+      0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+      15%  { transform: translate(-50%,-50%) scale(1.05); opacity: 1; }
+      25%  { transform: translate(-50%,-50%) scale(1); }
+      75%  { opacity: 1; }
+      100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0; }
+    }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 14px;
+      border-radius: 2px;
+      opacity: 0;
+      z-index: 300;
+      pointer-events: none;
+      animation: confettiFall 3s ease-in forwards;
+    }
+    @keyframes confettiFall {
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(80vh) rotate(720deg); }
+    }
+
+    /* ── Birds (stage 3) ── */
+    .bird {
+      position: fixed;
+      font-size: 22px;
+      opacity: 0;
+      z-index: 5;
+      pointer-events: none;
+      animation: birdFly 6s ease-in-out forwards;
+    }
+    @keyframes birdFly {
+      0%   { opacity: 0; transform: translateX(0) translateY(0); }
+      10%  { opacity: 1; }
+      100% { opacity: 0; transform: translateX(120vw) translateY(-80px); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .tree-slot { width: 50px; }
+      #title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sky -->
+<div id="sky">
+  <div class="sun"></div>
+  <!-- Clouds injected by JS -->
+</div>
+
+<!-- Ground -->
+<div id="ground"><div id="soil"></div></div>
+
+<!-- Forest -->
+<div id="forest"></div>
+
+<!-- Big Message Banner -->
+<div id="big-message"></div>
+
+<!-- UI Panel -->
+<div id="ui-panel">
+  <div id="title">🌱 Everyone Matters</div>
+  <div id="stage-label">Stage 1 — Plant the first seeds</div>
+  <div id="counter-bar">
+    <span id="counter-text">0 voices</span>
+    <div id="progress-track"><div id="progress-fill"></div></div>
+    <span id="next-goal">→ 5</span>
+  </div>
+  <button id="mic-btn" title="Click to speak">🎤</button>
+  <div id="mic-label">Click mic &amp; say "I am the root" or "I am the shoot"</div>
+  <div id="transcript-box">Waiting for voices…</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════ */
+const STAGE_THRESHOLDS = [0, 5, 10]; // stage 1 starts at 0, stage 2 at 5, stage 3 at 10
+const MAX_TREES = 16;
+
+const STAGE_LABELS = [
+  "Stage 1 — Plant the first seeds",
+  "Stage 2 — The forest is growing!",
+  "Stage 3 — We changed the world! 🎉"
+];
+
+const SPROUT_QUOTES = [
+  "I'm so tiny… but I'm here!",
+  "Just a seedling, but I matter!",
+  "I feel the sunlight…",
+  "I'm reaching up!",
+  "Every root counts!"
+];
+
+const SAPLING_QUOTES = [
+  "We're growing stronger together!",
+  "More voices, more life!",
+  "The forest is waking up!",
+  "Together we rise!",
+  "Feel our roots connect!"
+];
+
+const BIGTREE_QUOTES = [
+  "We changed the world! 🌍",
+  "Together we are a forest!",
+  "Every voice made a difference!",
+  "We did it — together!",
+  "This is our forest of hope!"
+];
+
+const STAGE_MESSAGES = [
+  null,
+  "🌿 We've grown so much… but we need more voices to become a forest!",
+  "🌳 Amazing! Together, we have changed the world! 🎉"
+];
+
+const STAGE_COLORS = [
+  '#5a9e3a',  // stage 1 green
+  '#2a7a8a',  // stage 2 teal
+  '#c0392b'   // stage 3 celebration red
+];
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let voiceCount = 0;
+let currentStage = 1;
+let trees = []; // array of tree objects {slot, stage}
+let isListening = false;
+let recognition = null;
+
+/* ═══════════════════════════════════════════════
+   CLOUDS
+═══════════════════════════════════════════════ */
+function makeClouds() {
+  const sky = document.getElementById('sky');
+  const cloudData = [
+    { w: 120, h: 40, top: 60,  delay: 0,   dur: 28 },
+    { w: 90,  h: 30, top: 100, delay: 8,   dur: 22 },
+    { w: 150, h: 50, top: 30,  delay: 15,  dur: 35 },
+    { w: 80,  h: 28, top: 130, delay: 5,   dur: 20 },
+  ];
+  cloudData.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'cloud';
+    el.style.cssText = `width:${c.w}px;height:${c.h}px;top:${c.top}px;left:-200px;animation-duration:${c.dur}s;animation-delay:-${c.delay}s;`;
+    sky.appendChild(el);
+  });
+}
+makeClouds();
+
+/* ═══════════════════════════════════════════════
+   TREE SLOTS — evenly spaced
+═══════════════════════════════════════════════ */
+function initForest() {
+  const forest = document.getElementById('forest');
+  forest.innerHTML = '';
+  trees = [];
+  for (let i = 0; i < MAX_TREES; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'tree-slot';
+    slot.id = `slot-${i}`;
+
+    // seed dot
+    const seed = document.createElement('div');
+    seed.className = 'seed';
+    slot.appendChild(seed);
+
+    // sprout layer
+    slot.appendChild(buildSprout());
+    // sapling layer
+    slot.appendChild(buildSapling());
+    // big tree layer
+    slot.appendChild(buildBigTree(i));
+
+    forest.appendChild(slot);
+    trees.push({ el: slot, stage: 0 }); // 0=seed,1=sprout,2=sapling,3=big
+  }
+}
+
+function buildSprout() {
+  const wrap = document.createElement('div');
+  wrap.className = 'sprout';
+  wrap.innerHTML = `
+    <div class="leaf-pair">
+      <div class="leaf left"></div>
+      <div class="leaf right"></div>
+    </div>
+    <div class="stem" style="height:30px"></div>
+    <div class="tree-bubble"></div>
+  `;
+  return wrap;
+}
+
+function buildSapling() {
+  const wrap = document.createElement('div');
+  wrap.className = 'sapling';
+  wrap.innerHTML = `
+    <div class="leaf-pair" style="width:60px;height:28px">
+      <div class="leaf left" style="width:30px;height:20px"></div>
+      <div class="leaf right" style="width:30px;height:20px"></div>
+    </div>
+    <div class="leaf-pair" style="width:44px;height:22px;margin-top:4px">
+      <div class="leaf left" style="width:24px;height:16px"></div>
+      <div class="leaf right" style="width:24px;height:16px"></div>
+    </div>
+    <div class="stem" style="height:60px;width:8px"></div>
+    <div class="tree-bubble"></div>
+  `;
+  return wrap;
+}
+
+function buildBigTree(idx) {
+  const hue = 100 + (idx * 8) % 40;
+  const wrap = document.createElement('div');
+  wrap.className = 'big-tree';
+  wrap.innerHTML = `
+    <svg width="70" height="160" viewBox="0 0 70 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- trunk -->
+      <rect x="28" y="100" width="14" height="60" rx="5" fill="#8B5E3C"/>
+      <!-- canopy layers -->
+      <ellipse cx="35" cy="95" rx="32" ry="22" fill="hsl(${hue},55%,38%)"/>
+      <ellipse cx="35" cy="75" rx="26" ry="20" fill="hsl(${hue},60%,44%)"/>
+      <ellipse cx="35" cy="56" rx="20" ry="18" fill="hsl(${hue},65%,50%)"/>
+      <ellipse cx="35" cy="40" rx="14" ry="14" fill="hsl(${hue},70%,56%)"/>
+    </svg>
+    <div class="tree-bubble"></div>
+  `;
+  return wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   GROW A TREE
+═══════════════════════════════════════════════ */
+function growNextTree(targetStage) {
+  // find first tree below targetStage
+  const idx = trees.findIndex(t => t.stage < targetStage);
+  if (idx === -1) return;
+
+  const tree = trees[idx];
+  const slot = tree.el;
+
+  // hide seed
+  slot.querySelector('.seed').style.opacity = '0';
+
+  if (targetStage === 1) {
+    growToSprout(slot, idx);
+    tree.stage = 1;
+  } else if (targetStage === 2) {
+    growToSapling(slot, idx);
+    tree.stage = 2;
+  } else if (targetStage === 3) {
+    growToBigTree(slot, idx);
+    tree.stage = 3;
+  }
+}
+
+function growToSprout(slot, idx) {
+  const sprout = slot.querySelector('.sprout');
+  sprout.classList.remove('grow');
+  void sprout.offsetWidth; // reflow
+  sprout.classList.add('grow');
+  sprout.style.opacity = '1';
+  sprout.style.transform = 'scaleY(1)';
+
+  const bubble = sprout.querySelector('.tree-bubble');
+  const quote = SPROUT_QUOTES[idx % SPROUT_QUOTES.length];
+  showBubble(bubble, quote, 800);
+  speakText(quote, 0.8);
+}
+
+function growToSapling(slot, idx) {
+  // hide sprout
+  const sprout = slot.querySelector('.sprout');
+  sprout.style.opacity = '0';
+
+  const sapling = slot.querySelector('.sapling');
+  sapling.classList.remove('grow');
+  void sapling.offsetWidth;
+  sapling.classList.add('grow');
+  sapling.style.opacity = '1';
+  sapling.style.transform = 'scaleY(1)';
+
+  const bubble = sapling.querySelector('.tree-bubble');
+  const quote = SAPLING_QUOTES[idx % SAPLING_QUOTES.length];
+  showBubble(bubble, quote, 800);
+}
+
+function growToBigTree(slot, idx) {
+  // hide sapling
+  const sapling = slot.querySelector('.sapling');
+  sapling.style.opacity = '0';
+
+  const bigTree = slot.querySelector('.big-tree');
+  bigTree.classList.remove('grow');
+  void bigTree.offsetWidth;
+  bigTree.classList.add('grow');
+  bigTree.style.opacity = '1';
+  bigTree.style.transform = 'scale(1)';
+
+  const bubble = bigTree.querySelector('.tree-bubble');
+  const quote = BIGTREE_QUOTES[idx % BIGTREE_QUOTES.length];
+  showBubble(bubble, quote, 800);
+}
+
+function showBubble(bubble, text, delay) {
+  setTimeout(() => {
+    bubble.textContent = text;
+    bubble.classList.remove('show');
+    void bubble.offsetWidth;
+    bubble.classList.add('show');
+    setTimeout(() => bubble.classList.remove('show'), 3600);
+  }, delay);
+}
+
+/* ═══════════════════════════════════════════════
+   STAGE TRANSITIONS
+═══════════════════════════════════════════════ */
+function checkStage() {
+  let newStage = currentStage;
+  if (voiceCount >= STAGE_THRESHOLDS[2]) newStage = 3;
+  else if (voiceCount >= STAGE_THRESHOLDS[1]) newStage = 2;
+
+  if (newStage !== currentStage) {
+    currentStage = newStage;
+    onStageChange(newStage);
+  }
+}
+
+function onStageChange(stage) {
+  document.getElementById('stage-label').textContent = STAGE_LABELS[stage - 1];
+
+  if (stage === 2) {
+    showBigMessage(STAGE_MESSAGES[1]);
+    speakText("We've grown so much, but we need more voices to become a forest!", 1.0);
+    document.getElementById('progress-fill').style.background = 'linear-gradient(90deg, #2a7a8a, #4ab8cc)';
+    // upgrade all existing sprouts to saplings
+    trees.forEach((t, i) => {
+      if (t.stage === 1) {
+        setTimeout(() => { growToSapling(t.el, i); t.stage = 2; }, i * 120);
+      }
+    });
+  }
+
+  if (stage === 3) {
+    showBigMessage(STAGE_MESSAGES[2]);
+    speakText("Amazing! Together, we have changed the world!", 1.0);
+    document.getElementById('progress-fill').style.background = 'linear-gradient(90deg, #c0392b, #e74c3c)';
+    // upgrade all to big trees
+    trees.forEach((t, i) => {
+      if (t.stage < 3) {
+        setTimeout(() => { growToBigTree(t.el, i); t.stage = 3; }, i * 150);
+      }
+    });
+    setTimeout(() => {
+      launchConfetti();
+      launchBirds();
+    }, 1200);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   VOICE COUNT & UI UPDATE
+═══════════════════════════════════════════════ */
+function addVoice() {
+  if (voiceCount >= MAX_TREES * 3) return;
+  voiceCount++;
+  updateUI();
+  checkStage();
+
+  // grow appropriate tree
+  if (currentStage === 1) {
+    growNextTree(1);
+  } else if (currentStage === 2) {
+    growNextTree(2);
+  } else {
+    growNextTree(3);
+  }
+}
+
+function updateUI() {
+  document.getElementById('counter-text').textContent = `${voiceCount} voice${voiceCount !== 1 ? 's' : ''}`;
+
+  let pct = 0;
+  let nextGoal = '';
+  if (currentStage === 1) {
+    pct = (voiceCount / STAGE_THRESHOLDS[1]) * 100;
+    nextGoal = `→ ${STAGE_THRESHOLDS[1]}`;
+  } else if (currentStage === 2) {
+    pct = ((voiceCount - STAGE_THRESHOLDS[1]) / (STAGE_THRESHOLDS[2] - STAGE_THRESHOLDS[1])) * 100;
+    nextGoal = `→ ${STAGE_THRESHOLDS[2]}`;
+  } else {
+    pct = 100;
+    nextGoal = '🌳';
+  }
+  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('next-goal').textContent = nextGoal;
+}
+
+/* ═══════════════════════════════════════════════
+   BIG MESSAGE
+═══════════════════════════════════════════════ */
+function showBigMessage(text) {
+  const el = document.getElementById('big-message');
+  el.textContent = text;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4100);
+}
+
+/* ═══════════════════════════════════════════════
+   SPEECH SYNTHESIS
+═══════════════════════════════════════════════ */
+function speakText(text, rate = 1.0) {
+  if (!window.speechSynthesis) return;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-US';
+  utt.rate = rate;
+  utt.pitch = 1.1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
+}
+
+/* ═══════════════════════════════════════════════
+   SPEECH RECOGNITION
+═══════════════════════════════════════════════ */
+const KEYWORDS = ['root', 'shoot', 'i am the root', 'i am the shoot', 'i am root', 'i am shoot'];
+
+function initRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('mic-label').textContent = '⚠️ Voice recognition not supported. Use the + button instead.';
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('mic-btn').classList.add('listening');
+    document.getElementById('mic-btn').textContent = '🔴';
+    document.getElementById('transcript-box').textContent = 'Listening…';
+  };
+
+  recognition.onresult = (e) => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    document.getElementById('transcript-box').textContent = `"${transcript}"`;
+
+    const lower = transcript.toLowerCase();
+    const matched = KEYWORDS.some(kw => lower.includes(kw));
+    if (matched && e.results[e.results.length - 1].isFinal) {
+      recognition.stop();
+      document.getElementById('transcript-box').textContent = `✅ "${transcript}" — Great!`;
+      addVoice();
+    }
+  };
+
+  recognition.onerror = (e) => {
+    document.getElementById('transcript-box').textContent = `Mic error: ${e.error}. Try again.`;
+    stopListening();
+  };
+
+  recognition.onend = () => {
+    stopListening();
+  };
+}
+
+function stopListening() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('mic-btn').textContent = '🎤';
+}
+
+document.getElementById('mic-btn').addEventListener('click', () => {
+  if (!recognition) { initRecognition(); }
+  if (!recognition) return;
+  if (isListening) {
+    recognition.stop();
+  } else {
+    try { recognition.start(); } catch(e) {}
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   MANUAL ADD BUTTON (keyboard shortcut: Space)
+═══════════════════════════════════════════════ */
+// Add a small "+" button for demo / no-mic situations
+const plusBtn = document.createElement('button');
+plusBtn.id = 'plus-btn';
+plusBtn.textContent = '+ Add Voice (demo)';
+plusBtn.style.cssText = `
+  position:fixed; bottom:20px; right:20px;
+  background:#5a9e3a; color:white; border:none;
+  border-radius:24px; padding:10px 18px;
+  font-size:14px; font-weight:600; cursor:pointer;
+  box-shadow:0 4px 16px #5a9e3a66; z-index:100;
+  transition: transform 0.1s;
+`;
+plusBtn.addEventListener('click', () => {
+  addVoice();
+  document.getElementById('transcript-box').textContent = '✅ "I am the root" — Great!';
+});
+plusBtn.addEventListener('mousedown', () => plusBtn.style.transform = 'scale(0.95)');
+plusBtn.addEventListener('mouseup', () => plusBtn.style.transform = 'scale(1)');
+document.body.appendChild(plusBtn);
+
+// Reset button
+const resetBtn = document.createElement('button');
+resetBtn.id = 'reset-btn';
+resetBtn.textContent = '↺ Reset';
+resetBtn.style.cssText = `
+  position:fixed; bottom:20px; left:20px;
+  background:#888; color:white; border:none;
+  border-radius:24px; padding:10px 18px;
+  font-size:13px; font-weight:600; cursor:pointer;
+  box-shadow:0 4px 16px #0003; z-index:100;
+  transition: transform 0.1s;
+`;
+resetBtn.addEventListener('click', () => {
+  voiceCount = 0;
+  currentStage = 1;
+  document.getElementById('stage-label').textContent = STAGE_LABELS[0];
+  document.getElementById('transcript-box').textContent = 'Waiting for voices…';
+  document.getElementById('progress-fill').style.background = 'linear-gradient(90deg, #5a9e3a, #7ec850)';
+  initForest();
+  updateUI();
+});
+resetBtn.addEventListener('mousedown', () => resetBtn.style.transform = 'scale(0.95)');
+resetBtn.addEventListener('mouseup', () => resetBtn.style.transform = 'scale(1)');
+document.body.appendChild(resetBtn);
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target === document.body) {
+    e.preventDefault();
+    addVoice();
+    document.getElementById('transcript-box').textContent = '✅ "I am the shoot" — Great!';
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════════ */
+function launchConfetti() {
+  const colors = ['#f0c040','#5a9e3a','#e05555','#4a9aff','#ff9f40','#c840f0'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left: ${Math.random() * 100}vw;
+      top: -20px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      animation-delay: ${Math.random() * 1.5}s;
+      animation-duration: ${2.5 + Math.random() * 2}s;
+      transform: rotate(${Math.random() * 360}deg);
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 5000);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   BIRDS
+═══════════════════════════════════════════════ */
+function launchBirds() {
+  for (let i = 0; i < 6; i++) {
+    const b = document.createElement('div');
+    b.className = 'bird';
+    b.textContent = '🐦';
+    b.style.cssText = `
+      left: -40px;
+      top: ${20 + Math.random() * 30}vh;
+      animation-delay: ${i * 0.6}s;
+      font-size: ${18 + Math.random() * 10}px;
+    `;
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 7000);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+initForest();
+initRecognition();
+updateUI();
+</script>
+</body>
+</html>
